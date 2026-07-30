@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة الموظف — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .customer-row { display: flex; align-items: center; gap: 12px; padding: 14px; background: white; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; flex-wrap: wrap; }
+    .customer-row .c-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; flex-shrink: 0; background: var(--primary); }
+    .customer-row .c-info { flex: 1; min-width: 120px; }
+    .customer-row .c-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .customer-row .c-phone { font-size: 12px; color: var(--text-muted); }
+    .customer-row .c-points { font-size: 18px; font-weight: 800; color: var(--primary); }
+    .action-btns { display: flex; gap: 6px; margin-top: 8px; width: 100%; }
+    .action-btns button { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; flex: 1; }
+    .btn-msg { background: var(--primary); color: white; }
+    .qr-swatch { aspect-ratio: 1; border-radius: 10px; cursor: pointer; border: 3px solid transparent; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    .qr-swatch.selected { border-color: var(--primary); transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="logout()" title="خروج">🚪</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Employee Info -->
+    <div class="hero" style="padding: 20px 16px 30px; background-image: linear-gradient(135deg, rgba(27,59,111,0.90), rgba(15,42,84,0.94)), url('assets/hero-porsche.jpg'); background-size: cover; background-position: center;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div id="empPhotoBig" style="width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; background: white;">🧑‍🔧</div>
+        <div style="text-align: right;">
+          <div style="color: white; font-size: 20px; font-weight: 800;" id="empName">موظف</div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 13px;" id="empBranch">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid" style="margin-top: -15px; position: relative; z-index: 2;">
+      <div class="stat-card">
+        <div class="stat-value" id="customerCount">0</div>
+        <div class="stat-label">عميل</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalPoints">0</div>
+        <div class="stat-label">نقطة</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('customers')">👥 عملائي</button>
+      <button class="tab-btn" onclick="switchTab('wash')">🚿 تسجيل غسلة</button>
+      <button class="tab-btn" onclick="switchTab('qr')">📱 كودي</button>
+      <button class="tab-btn" onclick="switchTab('profile')">📇 صفحتي</button>
+    </div>
+
+    <!-- Customers Tab -->
+    <div class="tab-content active" id="tab-customers">
+      <div style="padding: 0 16px;">
+        <input type="text" class="form-input" id="customerSearch" placeholder="🔍 دور على عميل بالرقم أو الاسم..." oninput="filterCustomers()" style="margin-bottom: 12px;">
+      </div>
+      <div id="customersList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <!-- Log Wash Tab -->
+    <div class="tab-content" id="tab-wash">
+      <div class="card">
+        <div class="card-title">🚿 تسجيل غسلة جديدة</div>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+          كل جنيه في الفاتورة = نقطة تلقائي على حساب العميل
+        </p>
+        <form id="washForm" onsubmit="handleWash(event)">
+          <div class="form-group">
+            <label class="form-label">رقم هاتف العميل</label>
+            <input type="tel" class="form-input" id="washPhone" placeholder="01xxxxxxxxx" required pattern="01[0-9]{9}" onblur="lookupCustomer()">
+          </div>
+          <div class="form-group" id="newCustomerNameGroup" style="display: none;">
+            <label class="form-label">اسم العميل (عميل جديد)</label>
+            <input type="text" class="form-input" id="washName" placeholder="اسم العميل">
+          </div>
+          <div id="lookupInfo" style="margin-bottom: 12px;"></div>
+          <div class="form-group">
+            <label class="form-label">مبلغ الفاتورة (جنيه)</label>
+            <input type="number" class="form-input" id="washAmount" placeholder="مثال: 150" required min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">وصف الخدمة</label>
+            <input type="text" class="form-input" id="washDesc" placeholder="مثال: غسلة كماوي كاملة">
+          </div>
+          <button type="submit" class="btn btn-primary" id="washSubmitBtn">➕ تسجيل وإضافة النقاط</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- QR Tab -->
+    <div class="tab-content" id="tab-qr">
+      <div class="card" style="text-align: center;">
+        <div class="card-title">📱 كود QR بتاعك</div>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+          العملاء يمسحوا الكود ده عشان ياخدوا هدية يومية ويتسجلوا تحتك تلقائي
+        </p>
+        <canvas id="qrCanvas" width="360" height="520" style="width:100%; max-width:280px; border-radius:16px; box-shadow: var(--shadow-lg); margin-bottom: 14px;"></canvas>
+        <p style="font-size: 11px; color: var(--text-light); word-break: break-all;" id="qrLink">—</p>
+        <div id="qrAdminNote" style="display:none; font-size:12px; background:#FEF3C7; border:1px solid #F59E0B; border-radius:10px; padding:8px; margin-top:8px;">
+          🖼️ الأدمن رفع صورة QR مخصصة ليك، وهي المعروضة دلوقتي بدل التصميم التلقائي
+        </div>
+        <div id="qrTemplateSection" style="margin-top:16px;">
+          <div style="font-weight:700; font-size:13px; margin-bottom:8px; text-align:right;">🎨 اختار شكل الكود (10 تصاميم)</div>
+          <div id="qrTemplatePicker" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;"></div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm" onclick="downloadQrPng()" style="width: auto;">⬇️ تحميل PNG</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.print()" style="width: auto;">🖨️ طباعة / PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick="shareQR()" style="width: auto;">📤 شارك الرابط</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Page Tab -->
+    <div class="tab-content" id="tab-profile">
+      <div class="card">
+        <div class="card-title">📇 صفحتي</div>
+        <div class="profile-photo-wrap">
+          <div class="profile-photo" id="profilePhotoPreview">🧑‍🔧</div>
+          <div>
+            <button type="button" class="upload-btn" onclick="document.getElementById('profilePhotoInput').click()">📷 صورتي</button>
+            <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+          </div>
+        </div>
+        <form id="profileForm" onsubmit="saveProfile(event)">
+          <div class="form-group">
+            <label class="form-label">الاسم</label>
+            <input type="text" class="form-input" id="profileName" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم التليفون</label>
+            <input type="tel" class="form-input" id="profilePhone" placeholder="01xxxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">العنوان</label>
+            <textarea class="form-input" id="profileAddress" rows="2" placeholder="عنوان المحل بالتفصيل"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Customer History Modal -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">📜 حركات <span id="histCustName"></span></div>
+        <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
+      </div>
+      <div id="historyBody" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- Message Modal -->
+  <div class="modal-overlay" id="msgModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">📨 ابعت رسالة لـ <span id="msgCustName"></span></div>
+        <button class="modal-close" onclick="closeMsgModal()">✕</button>
+      </div>
+      <form id="msgForm" onsubmit="sendMessage(event)">
+        <div class="form-group">
+          <textarea class="form-input" id="msgText" rows="3" placeholder="اكتب رسالتك..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">إرسال</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+    const token = localStorage.getItem('empToken');
+    if (!token) window.location.href = 'index.html';
+
+    let allCustomers = [];
+    let empRewards = [];
+    let msgPhone = null;
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function api(url, opts = {}) {
+      opts.headers = opts.headers || {};
+      opts.headers['Authorization'] = 'Bearer ' + token;
+      opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+      const res = await fetch(API + url, opts);
+      return res.json();
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await api('/api/employee/me');
+        if (!data.employee) { logout(); return; }
+        document.getElementById('empName').textContent = data.employee.name;
+        document.getElementById('empBranch').textContent = data.branch ? data.branch.name : '—';
+        document.getElementById('profileName').value = data.employee.name;
+        document.getElementById('profilePhone').value = data.employee.phone || '';
+        document.getElementById('profileAddress').value = data.employee.address || '';
+        if (data.employee.photoUrl) {
+          document.getElementById('empPhotoBig').innerHTML = `<img src="${data.employee.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`;
+          document.getElementById('profilePhotoPreview').innerHTML = `<img src="${data.employee.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+        const scanUrl = window.location.origin + '/scan.html?emp=' + data.employee.id;
+        document.getElementById('qrLink').textContent = scanUrl;
+        window._empId = data.employee.id;
+        window._empName = data.employee.name;
+        window._scanUrl = scanUrl;
+        window._customQrImageUrl = data.employee.customQrImageUrl || null;
+        document.getElementById('qrAdminNote').style.display = window._customQrImageUrl ? 'block' : 'none';
+        document.getElementById('qrTemplateSection').style.display = window._customQrImageUrl ? 'none' : 'block';
+        currentQrTemplate = data.employee.qrTemplate || 'tpl1';
+        renderQrTemplatePicker();
+        drawQrCanvas(currentQrTemplate);
+      } catch (e) {
+        showToast('مش قادر أجيب بياناتك', 'error');
+      }
+    }
+
+    async function loadCustomers() {
+      try {
+        const data = await api('/api/employee/customers');
+        allCustomers = data.customers || [];
+        document.getElementById('customerCount').textContent = allCustomers.length;
+        document.getElementById('totalPoints').textContent = allCustomers.reduce((s, c) => s + c.points, 0).toLocaleString();
+        renderCustomers(allCustomers);
+      } catch (e) {
+        showToast('مش قادر أجيب العملاء', 'error');
+      }
+    }
+
+    function renderCustomers(list) {
+      const container = document.getElementById('customersList');
+      if (!list.length) {
+        container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش عملاء لسه</h3><p>سجّل أول غسلة من تبويب "تسجيل غسلة"</p></div>';
+        return;
+      }
+      container.innerHTML = list.map(c => `
+        <div class="customer-row">
+          <div class="c-avatar" onclick="openHistory('${c.phone}', '${c.name.replace(/'/g, '')}')" style="cursor:pointer;">${(c.name || '؟').charAt(0)}</div>
+          <div class="c-info" onclick="openHistory('${c.phone}', '${c.name.replace(/'/g, '')}')" style="cursor:pointer;">
+            <div class="c-name">${c.name}</div>
+            <div class="c-phone">${c.phone}</div>
+          </div>
+          <div class="c-points">${c.points.toLocaleString()}</div>
+          <div class="action-btns">
+            <button class="btn-msg" style="background: var(--secondary);" onclick="openHistory('${c.phone}', '${c.name.replace(/'/g, '')}')">📜 الحركات</button>
+            <button class="btn-msg" onclick="openMessage('${c.phone}', '${c.name.replace(/'/g, '')}')">📨 رسالة</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCustomers() {
+      const q = document.getElementById('customerSearch').value.trim().toLowerCase();
+      if (!q) { renderCustomers(allCustomers); return; }
+      renderCustomers(allCustomers.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q)));
+    }
+
+    async function lookupCustomer() {
+      const phone = document.getElementById('washPhone').value.trim();
+      const info = document.getElementById('lookupInfo');
+      const nameGroup = document.getElementById('newCustomerNameGroup');
+      if (!phone || phone.length < 11) { info.innerHTML = ''; return; }
+      try {
+        const data = await api('/api/employee/lookup?phone=' + encodeURIComponent(phone));
+        if (!data.found) {
+          info.innerHTML = '<div class="empty-state" style="padding:10px;"><span class="emoji">✨</span><p>عميل جديد — هيتسجل تحتك تلقائي</p></div>';
+          nameGroup.style.display = 'block';
+        } else if (data.belongsToOther) {
+          info.innerHTML = `<div class="locked-shop" style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:12px;padding:10px;font-size:13px;">⚠️ العميل ده تابع لـ ${data.ownerName}، مش هينفع تسجل ليه نقط</div>`;
+          nameGroup.style.display = 'none';
+        } else {
+          info.innerHTML = `<div style="font-size:13px;color:var(--text-muted);">👤 ${data.customer.name} — رصيده الحالي: ${data.customer.points} نقطة</div>`;
+          nameGroup.style.display = 'none';
+        }
+      } catch (e) { info.innerHTML = ''; }
+    }
+
+    // lookup uses GET with query param via manual URL append
+    async function api_lookup(phone) {
+      const res = await fetch(API + '/api/employee/lookup?phone=' + encodeURIComponent(phone), { headers: { 'Authorization': 'Bearer ' + token } });
+      return res.json();
+    }
+
+    async function handleWash(e) {
+      e.preventDefault();
+      const btn = document.getElementById('washSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري التسجيل...';
+      const body = {
+        phone: document.getElementById('washPhone').value.trim(),
+        name: document.getElementById('washName').value.trim(),
+        amountSpent: document.getElementById('washAmount').value,
+        description: document.getElementById('washDesc').value.trim()
+      };
+      try {
+        const data = await api('/api/employee/wash', { method: 'POST', body: JSON.stringify(body) });
+        if (data.customer) {
+          showToast(`✅ تمت إضافة ${data.added} نقطة لـ ${data.customer.name}`, 'success');
+          document.getElementById('washForm').reset();
+          document.getElementById('lookupInfo').innerHTML = '';
+          document.getElementById('newCustomerNameGroup').style.display = 'none';
+          loadCustomers();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '➕ تسجيل وإضافة النقاط';
+      }
+    }
+
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('profilePhotoPreview').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        window._pendingPhotoUrl = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('profileName').value.trim(),
+        phone: document.getElementById('profilePhone').value.trim(),
+        address: document.getElementById('profileAddress').value.trim()
+      };
+      if (window._pendingPhotoUrl) body.photoUrl = window._pendingPhotoUrl;
+      try {
+        const data = await api('/api/employee/profile', { method: 'POST', body: JSON.stringify(body) });
+        if (data.employee) {
+          showToast('💾 تم الحفظ', 'success');
+          loadProfile();
+        }
+      } catch (e) {
+        showToast('خطأ في الحفظ', 'error');
+      }
+    }
+
+    // ---------- 10 تصاميم مختلفة لكارت الـ QR ----------
+    const qrTemplates = {
+      tpl1:  { name: 'أزرق كلاسيك', bg: ['#1E88E5', '#0D47A1'], border: '#ffffff', text: '#ffffff', accent: '#90CAF9', shape: 'rounded' },
+      tpl2:  { name: 'أبيض وأسود',  bg: ['#111111', '#111111'], border: '#ffffff', text: '#ffffff', accent: '#cccccc', shape: 'sharp' },
+      tpl3:  { name: 'ذهبي فاخر',   bg: ['#1a1a1a', '#3a2f0a'], border: '#D4AF37', text: '#D4AF37', accent: '#D4AF37', shape: 'ornate' },
+      tpl4:  { name: 'نيون',        bg: ['#0f0c29', '#302b63'], border: '#00F5FF', text: '#00F5FF', accent: '#FF00E5', shape: 'neon' },
+      tpl5:  { name: 'دائري',       bg: ['#43A047', '#1B5E20'], border: '#ffffff', text: '#ffffff', accent: '#A5D6A7', shape: 'circle' },
+      tpl6:  { name: 'إطار مزدوج',  bg: ['#5E35B1', '#311B92'], border: '#ffffff', text: '#ffffff', accent: '#B39DDB', shape: 'double' },
+      tpl7:  { name: 'منقط',        bg: ['#FB8C00', '#E65100'], border: '#ffffff', text: '#ffffff', accent: '#FFE0B2', shape: 'dotted' },
+      tpl8:  { name: 'تدرج أخضر',   bg: ['#00C853', '#00695C'], border: '#ffffff', text: '#ffffff', accent: '#B9F6CA', shape: 'rounded' },
+      tpl9:  { name: 'أحمر كلاسيك', bg: ['#E53935', '#B71C1C'], border: '#ffffff', text: '#ffffff', accent: '#FFCDD2', shape: 'sharp' },
+      tpl10: { name: 'بسيط شفاف',   bg: ['#F5F7FA', '#F5F7FA'], border: '#333333', text: '#222222', accent: '#999999', shape: 'minimal' }
+    };
+    let currentQrTemplate = 'tpl1';
+
+    function renderQrTemplatePicker() {
+      const picker = document.getElementById('qrTemplatePicker');
+      picker.innerHTML = Object.entries(qrTemplates).map(([id, t]) => `
+        <div class="qr-swatch ${id === currentQrTemplate ? 'selected' : ''}" style="background: linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1]});" onclick="selectQrTemplate('${id}')" title="${t.name}">${t.name.split(' ')[0]}</div>
+      `).join('');
+    }
+
+    async function selectQrTemplate(id) {
+      currentQrTemplate = id;
+      renderQrTemplatePicker();
+      drawQrCanvas(id);
+      try { await api('/api/employee/profile', { method: 'POST', body: JSON.stringify({ qrTemplate: id }) }); } catch (e) {}
+    }
+
+    function drawQrCanvas(templateId) {
+      const canvas = document.getElementById('qrCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      // لو الأدمن حاطط صورة مخصصة، اعرضها هي بس تملى الكارت كله من غير أي تصميم فوقها
+      if (window._customQrImageUrl) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const scale = Math.min(W / img.width, H / img.height);
+          const drawW = img.width * scale;
+          const drawH = img.height * scale;
+          const drawX = (W - drawW) / 2;
+          const drawY = (H - drawH) / 2;
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+        };
+        img.src = window._customQrImageUrl;
+        return;
+      }
+
+      const t = qrTemplates[templateId] || qrTemplates.tpl1;
+
+      // الخلفية (تدرج لوني)
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, t.bg[0]);
+      grad.addColorStop(1, t.bg[1]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // زخرفة حسب الشكل
+      ctx.strokeStyle = t.accent;
+      if (t.shape === 'dotted') {
+        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 3;
+        ctx.strokeRect(14, 14, W - 28, H - 28);
+        ctx.setLineDash([]);
+      } else if (t.shape === 'double') {
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, W - 20, H - 20);
+        ctx.strokeRect(20, 20, W - 40, H - 40);
+      } else if (t.shape === 'neon') {
+        ctx.lineWidth = 3;
+        ctx.shadowColor = t.accent;
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(12, 12, W - 24, H - 24);
+        ctx.shadowBlur = 0;
+      } else if (t.shape === 'ornate') {
+        ctx.lineWidth = 2;
+        ctx.strokeRect(12, 12, W - 24, H - 24);
+        ctx.beginPath();
+        [[12,12],[W-12,12],[12,H-12],[W-12,H-12]].forEach(([x,y]) => { ctx.moveTo(x+10,y); ctx.arc(x,y,10,0,Math.PI*2); });
+        ctx.fillStyle = t.accent;
+        ctx.fill();
+      } else if (t.shape !== 'minimal') {
+        ctx.lineWidth = 2;
+        ctx.strokeRect(12, 12, W - 24, H - 24);
+      } else {
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 20, W - 40, H - 40);
+      }
+
+      // اسم البراند
+      ctx.fillStyle = t.text;
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 26px Arial';
+      ctx.fillText('Car Care', W / 2, 55);
+
+      // صندوق أبيض للكود
+      const qrSize = 240;
+      const qrX = (W - qrSize) / 2;
+      const qrY = 85;
+      const boxPad = 12;
+      ctx.fillStyle = '#ffffff';
+      if (t.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(W / 2, qrY + qrSize / 2, qrSize / 2 + boxPad, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(qrX - boxPad, qrY - boxPad, qrSize + boxPad * 2, qrSize + boxPad * 2);
+      }
+
+      function finishDrawing() {
+        // اسم الموظف
+        ctx.fillStyle = t.text;
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(window._empName || '', W / 2, qrY + qrSize + 55);
+        // نص تحفيزي
+        ctx.font = '13px Arial';
+        ctx.fillStyle = t.accent;
+        ctx.fillText('امسح واخد هدية يومية 🎁', W / 2, qrY + qrSize + 80);
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        // نحسب أبعاد الصورة عشان تتحط كاملة من غير قص أو تمطيط (contain fit)
+        const scale = Math.min(qrSize / img.width, qrSize / img.height);
+        const drawW = img.width * scale;
+        const drawH = img.height * scale;
+        const drawX = qrX + (qrSize - drawW) / 2;
+        const drawY = qrY + (qrSize - drawH) / 2;
+        if (t.shape === 'circle') {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(W / 2, qrY + qrSize / 2, qrSize / 2, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+          ctx.restore();
+        } else {
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+        }
+        finishDrawing();
+      };
+      img.onerror = () => { finishDrawing(); };
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=M&data=${encodeURIComponent(window._scanUrl || '')}`;
+    }
+
+    function downloadQrPng() {
+      const canvas = document.getElementById('qrCanvas');
+      try {
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'qr-' + (window._empName || 'ghasla') + '.png';
+        a.click();
+      } catch (e) {
+        showToast('مش قادر أنزل الصورة، جرب زرار الطباعة بدل كده', 'error');
+      }
+    }
+
+    function shareQR() {
+      const url = document.getElementById('qrLink').textContent;
+      if (navigator.share) {
+        navigator.share({ title: 'Car Care', text: 'امسح الكود وخد هدية يومية!', url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('📋 اتنسخ الرابط', 'success');
+      }
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    async function openHistory(phone, name) {
+      document.getElementById('histCustName').textContent = name;
+      const body = document.getElementById('historyBody');
+      body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      document.getElementById('historyModal').classList.add('active');
+      try {
+        const data = await api('/api/employee/customers/transactions?phone=' + encodeURIComponent(phone));
+        const items = data.items || [];
+        if (!items.length) {
+          body.innerHTML = '<div class="empty-state" style="padding:10px;"><span class="emoji">📭</span><p>مفيش حركات لسه</p></div>';
+          return;
+        }
+        body.innerHTML = '<div class="tx-list">' + items.map(t => `
+          <div class="tx-item">
+            <div class="tx-icon ${t.type}">${t.type === 'earn' ? '💰' : '🎁'}</div>
+            <div class="tx-details">
+              <div class="tx-title">${t.desc}</div>
+              <div class="tx-date">${new Date(t.createdAt).toLocaleDateString('ar-EG')}</div>
+            </div>
+            <div class="tx-amount ${t.type}">${t.amount > 0 ? '+' : ''}${t.amount}</div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        body.innerHTML = '<div class="empty-state"><p>خطأ في التحميل</p></div>';
+      }
+    }
+
+    function openMessage(phone, name) {
+      msgPhone = phone;
+      document.getElementById('msgCustName').textContent = name;
+      document.getElementById('msgModal').classList.add('active');
+    }
+    function closeMsgModal() { document.getElementById('msgModal').classList.remove('active'); }
+
+    async function sendMessage(e) {
+      e.preventDefault();
+      const text = document.getElementById('msgText').value.trim();
+      try {
+        const data = await api('/api/employee/message', { method: 'POST', body: JSON.stringify({ phone: msgPhone, text }) });
+        if (data.ok !== false) {
+          showToast('📨 اتبعتت الرسالة', 'success');
+          document.getElementById('msgForm').reset();
+          closeMsgModal();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال', 'error');
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      event.target.closest('.tab-btn, .nav-item')?.classList.add('active');
+    }
+
+    function logout() {
+      localStorage.removeItem('empToken');
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('msgModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeMsgModal(); });
+    document.getElementById('historyModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('historyModal'); });
+
+    loadProfile();
+    loadCustomers();
+  </script>
+</body>
+</html>

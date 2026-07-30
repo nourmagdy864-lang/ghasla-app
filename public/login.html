@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>تسجيل الدخول — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+      </div>
+    </header>
+
+    <div style="border-radius: 0 0 28px 28px; overflow:hidden;">
+      <img src="assets/hand-car.jpg" alt="Car Care" style="width:100%; height:150px; object-fit:cover; display:block;">
+    </div>
+
+    <div style="padding: 30px 16px;">
+      <div class="text-center" style="margin-bottom: 24px;">
+        <div style="font-size: 56px; margin-bottom: 12px;">🔑</div>
+        <h1 style="font-size: 22px; font-weight: 800; margin-bottom: 6px;">أهلاً بيك تاني</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">سجّل دخولك عشان تشوف نقاطك وخدماتك</p>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">رقم التليفون</label>
+          <input type="tel" class="form-input" id="phone" placeholder="مثال: 01012345678" required pattern="01[0-9]{9}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <input type="password" class="form-input" id="password" placeholder="كلمة المرور" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 8px;" id="submitBtn">
+          🔓 دخول
+        </button>
+      </form>
+
+      <div class="text-center" style="margin-top: 20px;">
+        <p style="color: var(--text-muted); font-size: 14px;">
+          لسه معملتش حساب؟ <a href="signup.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">افتح حساب جديد</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري الدخول...';
+
+      const body = {
+        phone: document.getElementById('phone').value.trim(),
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const res = await fetch(API + '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          showToast('👋 أهلاً ' + data.customer.name + '!', 'success');
+          const pendingBonus = sessionStorage.getItem('pendingBonus');
+          sessionStorage.removeItem('pendingBonus');
+          setTimeout(() => window.location.href = pendingBonus ? 'scan.html' : 'dashboard.html', 800);
+        } else {
+          showToast(data.error || 'رقم أو باسورد غلط', 'error');
+          btn.disabled = false;
+          btn.textContent = '🔓 دخول';
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال بالسيرفر', 'error');
+        btn.disabled = false;
+        btn.textContent = '🔓 دخول';
+      }
+    }
+  </script>
+</body>
+</html>

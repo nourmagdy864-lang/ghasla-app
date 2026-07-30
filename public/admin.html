@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة الأدمن — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .shop-card-admin {
+      background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+      border: 2px solid var(--border); display: flex; align-items: center; gap: 14px;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .shop-card-admin:hover { border-color: var(--primary); }
+    .shop-card-admin .s-icon {
+      width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center;
+      justify-content: center; font-size: 24px; flex-shrink: 0; background: var(--primary); color: #fff; overflow: hidden;
+    }
+    .shop-card-admin .s-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .shop-card-admin .s-info { flex: 1; min-width: 0; }
+    .shop-card-admin .s-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .shop-card-admin .s-phone { font-size: 12px; color: var(--text-muted); }
+    .shop-card-admin .s-count { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .shop-card-admin .s-actions { display: flex; flex-direction: column; gap: 4px; }
+    .shop-card-admin .s-actions button {
+      font-size: 11px; padding: 4px 8px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;
+    }
+    .reward-admin {
+      background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .reward-admin .r-info h3 { font-size: 14px; font-weight: 700; }
+    .reward-admin .r-info p { font-size: 12px; color: var(--text-muted); }
+    .reward-admin .r-cost {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white;
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    }
+    .reward-admin .r-actions { display: flex; gap: 6px; }
+    .reward-admin .r-actions button { font-size: 11px; padding: 5px 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+    .multi-picker { max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; padding: 8px; }
+    .multi-picker label { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font-size: 13px; cursor: pointer; border-radius: 8px; }
+    .multi-picker label:hover { background: var(--bg-light, #f4f7fb); }
+    .multi-picker input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="logout()" title="خروج">🚪</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero" style="padding: 10px 16px 16px; text-align: center; background-image: linear-gradient(135deg, rgba(27,59,111,0.90), rgba(15,42,84,0.94)), url('assets/headlight-wash.jpg'); background-size: cover; background-position: center;">
+      <div style="display:inline-flex; align-items:center; gap:8px; background: rgba(255,255,255,0.15); padding: 6px 18px; border-radius: 30px; backdrop-filter: blur(4px);">
+        <span style="font-size: 20px;">⚙️</span>
+        <span style="color: white; font-size: 15px; font-weight: 800; letter-spacing: 0.3px;">لوحة التحكم</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" style="margin-top: -10px; position: relative; z-index: 2;">
+      <div class="stat-card">
+        <div class="stat-value" id="statCustomers">0</div>
+        <div class="stat-label">عميل</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statPoints">0</div>
+        <div class="stat-label">نقطة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statEmployees">0</div>
+        <div class="stat-label">موظف</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statBranches">0</div>
+        <div class="stat-label">فرع</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('employees')">🧑‍🔧 موظفين</button>
+      <button class="tab-btn" onclick="switchTab('customers')">🧑‍💼 عملاء</button>
+      <button class="tab-btn" onclick="switchTab('rewards')">🎁 خدمات</button>
+      <button class="tab-btn" onclick="switchTab('branches')">🏢 فروع</button>
+    </div>
+
+    <!-- Employees Tab -->
+    <div class="tab-content active" id="tab-employees">
+      <div style="padding: 0 16px 12px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="openAddEmployeeModal()" style="width: auto;">➕ موظف جديد</button>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='qr.html'" style="width: auto;">📱 أكواد QR</button>
+      </div>
+      <div id="employeesList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <!-- Customers Tab -->
+    <div class="tab-content" id="tab-customers">
+      <div style="padding: 0 16px;">
+        <input type="text" class="form-input" id="customerSearch" placeholder="🔍 دور على عميل بالرقم أو الاسم..." oninput="filterCustomers()" style="margin-bottom: 12px;">
+      </div>
+      <div id="customersList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <!-- Rewards Tab -->
+    <div class="tab-content" id="tab-rewards">
+      <div style="padding: 0 16px 12px;">
+        <button class="btn btn-primary btn-sm" onclick="openAddRewardModal()" style="width: auto;">➕ خدمة جديدة</button>
+      </div>
+      <div id="rewardsList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <!-- Branches Tab -->
+    <div class="tab-content" id="tab-branches">
+      <div style="padding: 0 16px 12px;">
+        <button class="btn btn-primary btn-sm" onclick="openAddBranchModal()" style="width: auto;">➕ فرع جديد</button>
+      </div>
+      <div id="branchesList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab('employees')"><span class="nav-icon">🧑‍🔧</span><span>موظفين</span></button>
+      <button class="nav-item" onclick="switchTab('customers')"><span class="nav-icon">🧑‍💼</span><span>عملاء</span></button>
+      <button class="nav-item" onclick="switchTab('rewards')"><span class="nav-icon">🎁</span><span>خدمات</span></button>
+      <button class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span><span>خروج</span></button>
+    </nav>
+
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div class="modal-overlay" id="addEmployeeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">➕ موظف جديد</div>
+        <button class="modal-close" onclick="closeModal('addEmployeeModal')">✕</button>
+      </div>
+      <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)">
+        <div class="form-group">
+          <label class="form-label">اسم الموظف</label>
+          <input type="text" class="form-input" id="empName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الفرع</label>
+          <select class="form-input" id="empBranchId" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الدخول</label>
+          <input type="text" class="form-input" id="empCode" required maxlength="15">
+        </div>
+        <button type="submit" class="btn btn-primary">إضافة</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Employee Customers Modal -->
+  <div class="modal-overlay" id="empCustomersModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">عملاء <span id="empCustName"></span></div>
+        <button class="modal-close" onclick="closeModal('empCustomersModal')">✕</button>
+      </div>
+      <div id="empCustomersBody" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Branch Modal -->
+  <div class="modal-overlay" id="branchModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="branchModalTitle">➕ فرع جديد</div>
+        <button class="modal-close" onclick="closeModal('branchModal')">✕</button>
+      </div>
+      <form id="branchForm" onsubmit="handleSaveBranch(event)">
+        <input type="hidden" id="branchId">
+        <div class="form-group">
+          <label class="form-label">اسم الفرع / المحل</label>
+          <input type="text" class="form-input" id="branchName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">العنوان</label>
+          <textarea class="form-input" id="branchAddress" rows="2" placeholder="عنوان المحل بالتفصيل"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="branchSubmitBtn">إضافة</button>
+      </form>
+      <button class="btn btn-danger btn-sm" id="branchDeleteBtn" style="display:none; margin-top: 10px;" onclick="handleDeleteBranch()">🗑️ حذف الفرع</button>
+
+      <div id="branchEmployeesSection" style="display:none; margin-top:18px; border-top:1px solid var(--border); padding-top:14px;">
+        <div class="card-title" style="font-size:14px;">🧑‍🔧 موظفين الفرع ده</div>
+        <div id="branchEmployeesList" style="margin-bottom:12px;"></div>
+        <form onsubmit="handleQuickAddEmployee(event)" style="display:flex; gap:8px; align-items:flex-end;">
+          <div class="form-group" style="flex:1; margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;">اسم موظف جديد</label>
+            <input type="text" class="form-input" id="quickEmpName" required style="padding:8px;">
+          </div>
+          <div class="form-group" style="flex:1; margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;">رقم الدخول</label>
+            <input type="text" class="form-input" id="quickEmpCode" required maxlength="15" style="padding:8px;">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm" style="width:auto; padding:8px 14px;">➕</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Reward Modal -->
+  <div class="modal-overlay" id="addRewardModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">➕ خدمة جديدة</div>
+        <button class="modal-close" onclick="closeModal('addRewardModal')">✕</button>
+      </div>
+      <form id="addRewardForm" onsubmit="handleAddReward(event)">
+        <div class="form-group">
+          <label class="form-label">اسم الخدمة</label>
+          <input type="text" class="form-input" id="rewardName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">عدد النقاط</label>
+          <input type="number" class="form-input" id="rewardCost" required min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">مخصصة لموظفين (اختياري — سيب فاضي = عامة لكل الموظفين)</label>
+          <div id="rewardEmployeePicker" class="multi-picker"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">إضافة</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Reward Modal -->
+  <div class="modal-overlay" id="editRewardModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">✏️ تعديل خدمة</div>
+        <button class="modal-close" onclick="closeModal('editRewardModal')">✕</button>
+      </div>
+      <form id="editRewardForm" onsubmit="handleEditReward(event)">
+        <input type="hidden" id="editRewardId">
+        <div class="form-group">
+          <label class="form-label">اسم الخدمة</label>
+          <input type="text" class="form-input" id="editRewardName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">عدد النقاط</label>
+          <input type="number" class="form-input" id="editRewardCost" required min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">مخصصة لموظفين (اختياري — سيب فاضي = عامة لكل الموظفين)</label>
+          <div id="editRewardEmployeePicker" class="multi-picker"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">💾 حفظ</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Customer Detail Modal -->
+  <div class="modal-overlay" id="customerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🧑‍💼 بيانات العميل</div>
+        <button class="modal-close" onclick="closeModal('customerModal')">✕</button>
+      </div>
+      <form id="customerForm" onsubmit="saveCustomerDetail(event)">
+        <input type="hidden" id="custId">
+        <div class="form-group"><label class="form-label">الاسم</label><input type="text" class="form-input" id="custName" required></div>
+        <div class="form-group"><label class="form-label">رقم التليفون</label><input type="tel" class="form-input" id="custPhone" required></div>
+        <div class="form-group"><label class="form-label">رقم اللوحة</label><input type="text" class="form-input" id="custPlate"></div>
+        <div class="form-group"><label class="form-label">النقاط</label><input type="number" class="form-input" id="custPoints" required></div>
+        <div class="form-group"><label class="form-label">ملاحظة</label><textarea class="form-input" id="custNote" rows="2"></textarea></div>
+        <div class="form-group">
+          <label class="form-label">تابع لموظف</label>
+          <select class="form-input" id="custOwner"><option value="">— بلا موظف —</option></select>
+        </div>
+        <button type="submit" class="btn btn-primary">💾 حفظ التعديلات</button>
+      </form>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px;">
+        <button class="btn btn-secondary btn-sm" onclick="openResetPasswordPrompt()">🔑 كلمة سر جديدة</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCustomerFromModal()">🗑️ حذف العميل</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+        <button class="btn btn-primary btn-sm" onclick="adjustCustomerPoints(1)">➕ ضيفله نقط</button>
+        <button class="btn btn-secondary btn-sm" onclick="adjustCustomerPoints(-1)">➖ اخصم نقط</button>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openRedeemForCustomer()">🎁 اصرف له مكافأة</button>
+      <div style="margin-top:16px;">
+        <div class="card-title" style="font-size:14px;">📜 آخر الحركات</div>
+        <div id="custTransactions" style="max-height:200px; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Redeem for Customer Modal -->
+  <div class="modal-overlay" id="redeemForCustomerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🎁 اصرف مكافأة للعميل</div>
+        <button class="modal-close" onclick="closeModal('redeemForCustomerModal')">✕</button>
+      </div>
+      <div id="redeemForCustomerOptions" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- Custom QR Upload Modal -->
+  <div class="modal-overlay" id="qrUploadModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🖼️ QR مخصص لـ <span id="qrUploadEmpName"></span></div>
+        <button class="modal-close" onclick="closeModal('qrUploadModal')">✕</button>
+      </div>
+      <p style="font-size:12px; color: var(--text-muted); margin-bottom:12px;">
+        ارفع صورة كود QR جاهزة (لو عندك تصميم خاص) هتحل محل الكود التلقائي عند الموظف ده. سيبها فاضية عشان ترجع للكود التلقائي.
+      </p>
+      <div id="qrUploadPreview" style="text-align:center; margin-bottom:12px;"></div>
+      <input type="file" id="qrUploadInput" accept="image/*" style="margin-bottom:12px;" onchange="handleQrUploadPreview(event)">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="saveQrUpload()">💾 حفظ</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearQrUpload()">↩️ رجّع الافتراضي</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = 'index.html';
+
+    let allCustomers = [];
+    let allEmployees = [];
+    let allBranches = [];
+    let allRewards = [];
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function api(url, opts = {}) {
+      opts.headers = opts.headers || {};
+      opts.headers['Authorization'] = 'Bearer ' + token;
+      opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+      const res = await fetch(API + url, opts);
+      return res.json();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // ---------- Branches ----------
+    async function loadBranches() {
+      try {
+        const data = await api('/api/admin/branches');
+        allBranches = data.branches || [];
+        document.getElementById('statBranches').textContent = allBranches.length;
+
+        const branchSelect = document.getElementById('empBranchId');
+        branchSelect.innerHTML = allBranches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+
+        const container = document.getElementById('branchesList');
+        if (!allBranches.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش فروع</h3></div>';
+          return;
+        }
+        container.innerHTML = allBranches.map(b => `
+          <div class="shop-card-admin" onclick="openEditBranchModal('${b.id}')">
+            <div class="s-icon">🏢</div>
+            <div class="s-info">
+              <div class="s-name">${b.name}</div>
+              <div class="s-phone">${b.address ? b.address : 'مفيش عنوان مسجل'}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        showToast('مش قادر أجيب الفروع', 'error');
+      }
+    }
+
+    function openAddBranchModal() {
+      document.getElementById('branchModalTitle').textContent = '➕ فرع جديد';
+      document.getElementById('branchId').value = '';
+      document.getElementById('branchName').value = '';
+      document.getElementById('branchAddress').value = '';
+      document.getElementById('branchSubmitBtn').textContent = 'إضافة';
+      document.getElementById('branchDeleteBtn').style.display = 'none';
+      document.getElementById('branchEmployeesSection').style.display = 'none';
+      openModal('branchModal');
+    }
+
+    function openEditBranchModal(id) {
+      const b = allBranches.find(x => x.id === id);
+      if (!b) return;
+      document.getElementById('branchModalTitle').textContent = '✏️ تعديل الفرع';
+      document.getElementById('branchId').value = b.id;
+      document.getElementById('branchName').value = b.name;
+      document.getElementById('branchAddress').value = b.address || '';
+      document.getElementById('branchSubmitBtn').textContent = '💾 حفظ التعديلات';
+      document.getElementById('branchDeleteBtn').style.display = 'block';
+      document.getElementById('branchEmployeesSection').style.display = 'block';
+      renderBranchEmployeesList(id);
+      openModal('branchModal');
+    }
+
+    function renderBranchEmployeesList(branchId) {
+      const list = allEmployees.filter(e => e.branchId === branchId);
+      const container = document.getElementById('branchEmployeesList');
+      if (!list.length) {
+        container.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">مفيش موظفين في الفرع ده لسه</p>';
+        return;
+      }
+      container.innerHTML = list.map(e => `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; font-size:13px;">
+          <span>${e.name}</span>
+          <span style="color:var(--text-muted); font-size:11px;">${e.customerCount} عميل</span>
+        </div>
+      `).join('');
+    }
+
+    async function handleQuickAddEmployee(e) {
+      e.preventDefault();
+      const branchId = document.getElementById('branchId').value;
+      const body = {
+        name: document.getElementById('quickEmpName').value.trim(),
+        branchId,
+        code: document.getElementById('quickEmpCode').value.trim()
+      };
+      try {
+        const data = await api('/api/admin/employees/add', { method: 'POST', body: JSON.stringify(body) });
+        if (data.employee) {
+          showToast('✅ اتضاف ' + data.employee.name, 'success');
+          document.getElementById('quickEmpName').value = '';
+          document.getElementById('quickEmpCode').value = '';
+          await loadEmployees();
+          renderBranchEmployeesList(branchId);
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function handleSaveBranch(e) {
+      e.preventDefault();
+      const id = document.getElementById('branchId').value;
+      const body = {
+        name: document.getElementById('branchName').value.trim(),
+        address: document.getElementById('branchAddress').value.trim()
+      };
+      try {
+        const data = id
+          ? await api('/api/admin/branches/update', { method: 'POST', body: JSON.stringify({ id, ...body }) })
+          : await api('/api/admin/branches/add', { method: 'POST', body: JSON.stringify(body) });
+        if (data.branch) {
+          showToast('💾 تم الحفظ', 'success');
+          closeModal('branchModal');
+          loadBranches();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function handleDeleteBranch() {
+      const id = document.getElementById('branchId').value;
+      const b = allBranches.find(x => x.id === id);
+      if (!b || !confirm(`متأكد إنك عايز تحذف ${b.name}؟`)) return;
+      try {
+        const data = await api('/api/admin/branches/delete', { method: 'POST', body: JSON.stringify({ id }) });
+        if (data.ok) { showToast('🗑️ اتحذف', 'success'); closeModal('branchModal'); loadBranches(); }
+        else showToast(data.error || 'حصل خطأ', 'error');
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    // ---------- Employees ----------
+    async function loadEmployees() {
+      try {
+        const data = await api('/api/admin/employees');
+        allEmployees = data.employees || [];
+        document.getElementById('statEmployees').textContent = allEmployees.length;
+
+        const pickerHtml = allEmployees.map(e => `
+          <label><input type="checkbox" value="${e.id}" class="reward-emp-check"> ${e.name} <span style="color:var(--text-muted);">— ${e.branchName}</span></label>
+        `).join('');
+        document.getElementById('rewardEmployeePicker').innerHTML = pickerHtml || '<p style="font-size:12px;color:var(--text-muted);">مفيش موظفين لسه</p>';
+        document.getElementById('editRewardEmployeePicker').innerHTML = pickerHtml.replace(/class="reward-emp-check"/g, 'class="edit-reward-emp-check"') || '<p style="font-size:12px;color:var(--text-muted);">مفيش موظفين لسه</p>';
+        const ownerSelect = document.getElementById('custOwner');
+        ownerSelect.innerHTML = '<option value="">— بلا موظف —</option>' + allEmployees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+
+        const container = document.getElementById('employeesList');
+        if (!allEmployees.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش موظفين</h3></div>';
+          return;
+        }
+        container.innerHTML = allEmployees.map(e => `
+          <div class="shop-card-admin">
+            <div class="s-icon">${e.photoUrl ? `<img src="${e.photoUrl}">` : '🧑‍🔧'}</div>
+            <div class="s-info" onclick="openEmployeeCustomers('${e.id}', '${e.name.replace(/'/g,'')}')" style="cursor:pointer;">
+              <div class="s-name">${e.name}</div>
+              <div class="s-phone">${e.branchName} · ${e.customerCount} عميل</div>
+            </div>
+            <div class="s-actions">
+              <button style="background:#8B5CF6; color:#fff;" onclick="openMoveEmployeeBranch('${e.id}', '${e.name.replace(/'/g,'')}')">🔄 نقل لفرع</button>
+              <button style="background:var(--info,#3B82F6); color:#fff;" onclick="openQrUploadModal('${e.id}', '${e.name.replace(/'/g,'')}')">🖼️ QR مخصص</button>
+              <button style="background:var(--warning); color:#fff;" onclick="resetEmployeeCode('${e.id}')">🔑 رقم جديد</button>
+              <button style="background:var(--danger); color:#fff;" onclick="deleteEmployee('${e.id}', '${e.name.replace(/'/g,'')}')">🗑️ حذف</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        showToast('مش قادر أجيب الموظفين', 'error');
+      }
+    }
+
+    function openAddEmployeeModal() { openModal('addEmployeeModal'); }
+
+    async function handleAddEmployee(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('empName').value.trim(),
+        branchId: document.getElementById('empBranchId').value,
+        code: document.getElementById('empCode').value.trim()
+      };
+      try {
+        const data = await api('/api/admin/employees/add', { method: 'POST', body: JSON.stringify(body) });
+        if (data.employee) {
+          showToast('✅ تمت إضافة ' + data.employee.name, 'success');
+          document.getElementById('addEmployeeForm').reset();
+          closeModal('addEmployeeModal');
+          loadEmployees();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function resetEmployeeCode(id) {
+      const code = prompt('اكتب الرقم الجديد لدخول الموظف:');
+      if (!code) return;
+      try {
+        const data = await api('/api/admin/employees/reset-code', { method: 'POST', body: JSON.stringify({ id, code }) });
+        if (data.ok) showToast('✅ اتغير الرقم', 'success'); else showToast(data.error || 'حصل خطأ', 'error');
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function openMoveEmployeeBranch(id, name) {
+      if (!allBranches.length) { showToast('مفيش فروع تانية', 'error'); return; }
+      const options = allBranches.map((b, i) => `${i + 1}) ${b.name}`).join('\n');
+      const choice = prompt(`انقل "${name}" لأي فرع؟ اكتب رقم الفرع:\n${options}`);
+      if (!choice) return;
+      const idx = parseInt(choice.trim(), 10) - 1;
+      const branch = allBranches[idx];
+      if (!branch) { showToast('رقم غلط', 'error'); return; }
+      try {
+        const data = await api('/api/admin/employees/move-branch', { method: 'POST', body: JSON.stringify({ id, branchId: branch.id }) });
+        if (data.ok) { showToast(`✅ اتنقل لـ ${branch.name}`, 'success'); loadEmployees(); }
+        else showToast(data.error || 'حصل خطأ', 'error');
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function deleteEmployee(id, name) {
+      if (!confirm(`متأكد إنك عايز تحذف ${name}؟ عملاءه هيفضلوا موجودين من غير موظف.`)) return;
+      try {
+        const data = await api('/api/admin/employees/delete', { method: 'POST', body: JSON.stringify({ id }) });
+        if (data.ok) { showToast('🗑️ اتحذف', 'success'); loadEmployees(); loadCustomers(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function openEmployeeCustomers(empId, name) {
+      document.getElementById('empCustName').textContent = name;
+      const body = document.getElementById('empCustomersBody');
+      body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      openModal('empCustomersModal');
+      try {
+        const data = await api('/api/admin/employee-customers?empId=' + encodeURIComponent(empId));
+        const customers = data.customers || [];
+        if (!customers.length) {
+          body.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش عملاء</h3></div>';
+          return;
+        }
+        body.innerHTML = customers.map(c => `
+          <div class="customer-card" style="cursor:pointer;" onclick="closeModal('empCustomersModal'); openCustomerDetail('${c.id}');">
+            <div class="customer-avatar">${c.name.charAt(0)}</div>
+            <div class="customer-info">
+              <div class="customer-name">${c.name}</div>
+              <div class="customer-phone">${c.phone}</div>
+            </div>
+            <div class="customer-points">${c.points.toLocaleString()}</div>
+          </div>
+        `).join('');
+      } catch (e) { body.innerHTML = '<div class="empty-state"><h3>خطأ</h3></div>'; }
+    }
+
+    // ---------- Customers ----------
+    async function loadCustomers() {
+      try {
+        const data = await api('/api/admin/customers');
+        allCustomers = data.customers || [];
+        document.getElementById('statCustomers').textContent = allCustomers.length;
+        document.getElementById('statPoints').textContent = allCustomers.reduce((s, c) => s + c.points, 0).toLocaleString();
+        renderCustomers(allCustomers);
+      } catch (e) { showToast('مش قادر أجيب العملاء', 'error'); }
+    }
+
+    function renderCustomers(list) {
+      const container = document.getElementById('customersList');
+      if (!list.length) {
+        container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش عملاء</h3></div>';
+        return;
+      }
+      container.innerHTML = list.map(c => `
+        <div class="customer-card" style="cursor:pointer;" onclick="openCustomerDetail('${c.id}')">
+          <div class="customer-avatar">${c.name.charAt(0)}</div>
+          <div class="customer-info">
+            <div class="customer-name">${c.name}</div>
+            <div class="customer-phone">${c.phone} ${c.ownerName ? '· ' + c.ownerName : ''}</div>
+          </div>
+          <div class="customer-points">${c.points.toLocaleString()}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterCustomers() {
+      const q = document.getElementById('customerSearch').value.trim().toLowerCase();
+      if (!q) { renderCustomers(allCustomers); return; }
+      renderCustomers(allCustomers.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q)));
+    }
+
+    let currentCustomerId = null;
+    async function openCustomerDetail(id) {
+      currentCustomerId = id;
+      const c = allCustomers.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('custId').value = c.id;
+      document.getElementById('custName').value = c.name;
+      document.getElementById('custPhone').value = c.phone;
+      document.getElementById('custPlate').value = c.plateNumber || '';
+      document.getElementById('custPoints').value = c.points;
+      document.getElementById('custNote').value = c.note || '';
+      document.getElementById('custOwner').value = c.ownerEmployeeId || '';
+      openModal('customerModal');
+
+      try {
+        const data = await api('/api/admin/customers/transactions?id=' + encodeURIComponent(id));
+        const items = data.items || [];
+        const box = document.getElementById('custTransactions');
+        box.innerHTML = items.length ? items.map(t => `
+          <div class="tx-item">
+            <div class="tx-icon ${t.type}">${t.type === 'earn' ? '💰' : '🎁'}</div>
+            <div class="tx-details">
+              <div class="tx-title">${t.desc}</div>
+              <div class="tx-date">${new Date(t.createdAt).toLocaleDateString('ar-EG')}</div>
+            </div>
+            <div class="tx-amount ${t.type}">${t.amount > 0 ? '+' : ''}${t.amount}</div>
+          </div>
+        `).join('') : '<div class="empty-state" style="padding:10px;"><p>مفيش حركات</p></div>';
+      } catch (e) {}
+    }
+
+    async function saveCustomerDetail(e) {
+      e.preventDefault();
+      const id = document.getElementById('custId').value;
+      const body = {
+        id,
+        name: document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        plateNumber: document.getElementById('custPlate').value.trim(),
+        points: document.getElementById('custPoints').value,
+        note: document.getElementById('custNote').value
+      };
+      try {
+        const data = await api('/api/admin/customers/update', { method: 'POST', body: JSON.stringify(body) });
+        if (data.customer) {
+          const ownerId = document.getElementById('custOwner').value;
+          if (ownerId !== (allCustomers.find(c => c.id === id)?.ownerEmployeeId || '')) {
+            await api('/api/admin/customers/reassign', { method: 'POST', body: JSON.stringify({ id, employeeId: ownerId || null }) });
+          }
+          showToast('💾 تم الحفظ', 'success');
+          closeModal('customerModal');
+          loadCustomers();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function openResetPasswordPrompt() {
+      const pass = prompt('اكتب كلمة السر الجديدة (4 حروف/أرقام على الأقل):');
+      if (!pass) return;
+      try {
+        const data = await api('/api/admin/customers/reset-password', { method: 'POST', body: JSON.stringify({ id: currentCustomerId, newPassword: pass }) });
+        if (data.ok) showToast('🔑 اتغيرت كلمة السر', 'success'); else showToast(data.error || 'حصل خطأ', 'error');
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function adjustCustomerPoints(sign) {
+      const c = allCustomers.find(x => x.id === currentCustomerId);
+      if (!c) return;
+      const label = sign > 0 ? 'كام نقطة تحب تضيفله؟' : 'كام نقطة تحب تخصم منه؟';
+      const input = prompt(label);
+      if (!input) return;
+      const amount = Math.round(Number(input));
+      if (!amount || amount <= 0) { showToast('اكتب رقم صحيح', 'error'); return; }
+      const newPoints = Math.max(0, c.points + (sign * amount));
+      try {
+        const data = await api('/api/admin/customers/update', { method: 'POST', body: JSON.stringify({ id: c.id, points: newPoints }) });
+        if (data.customer) {
+          showToast(sign > 0 ? `✅ اتضاف ${amount} نقطة` : `✅ اتخصم ${amount} نقطة`, 'success');
+          await loadCustomers();
+          openCustomerDetail(currentCustomerId);
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    function openRedeemForCustomer() {
+      const options = document.getElementById('redeemForCustomerOptions');
+      if (!allRewards.length) {
+        options.innerHTML = '<p style="text-align:center; color: var(--text-muted);">مفيش خدمات متاحة، ضيف واحدة من تبويب "خدمات"</p>';
+      } else {
+        options.innerHTML = allRewards.map(r => `
+          <div class="reward-item" onclick="redeemForCustomer('${r.id}')" style="cursor: pointer;">
+            <div class="reward-info">
+              <h3>${r.name}</h3>
+              <p>${r.cost} نقطة</p>
+            </div>
+            <div class="reward-cost">اصرف</div>
+          </div>
+        `).join('');
+      }
+      openModal('redeemForCustomerModal');
+    }
+
+    async function redeemForCustomer(rewardId) {
+      try {
+        const data = await api('/api/admin/customers/redeem', { method: 'POST', body: JSON.stringify({ customerId: currentCustomerId, rewardId }) });
+        if (data.customer) {
+          showToast(data.message, 'success');
+          closeModal('redeemForCustomerModal');
+          await loadCustomers();
+          openCustomerDetail(currentCustomerId); // refresh fields + transactions with fresh data
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function deleteCustomerFromModal() {
+      const c = allCustomers.find(x => x.id === currentCustomerId);
+      if (!c || !confirm(`متأكد إنك عايز تحذف ${c.name}؟`)) return;
+      try {
+        const data = await api('/api/admin/customers/delete', { method: 'POST', body: JSON.stringify({ id: currentCustomerId }) });
+        if (data.ok) { showToast('🗑️ اتحذف', 'success'); closeModal('customerModal'); loadCustomers(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    // ---------- Rewards ----------
+    async function loadRewards() {
+      try {
+        const data = await api('/api/rewards');
+        const container = document.getElementById('rewardsList');
+        const rewards = data.rewards || [];
+        allRewards = rewards;
+        if (!rewards.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش خدمات</h3></div>';
+          return;
+        }
+        container.innerHTML = rewards.map(r => {
+          const empIds = r.employeeIds || [];
+          const empNames = empIds.map(id => allEmployees.find(e => e.id === id)?.name).filter(Boolean);
+          return `
+          <div class="reward-admin">
+            <div class="r-info">
+              <h3>${r.name}</h3>
+              <p>${empNames.length ? 'خاصة بـ ' + empNames.join('، ') : 'عامة — كل الموظفين'}</p>
+            </div>
+            <div class="r-cost">${r.cost} نقطة</div>
+            <div class="r-actions">
+              <button style="background:var(--primary); color:#fff;" onclick='openEditReward(${JSON.stringify(r)})'>✏️</button>
+              <button style="background:var(--danger); color:#fff;" onclick="deleteReward('${r.id}')">🗑️</button>
+            </div>
+          </div>
+        `;
+        }).join('');
+      } catch (e) { showToast('مش قادر أجيب الخدمات', 'error'); }
+    }
+
+    function openAddRewardModal() { openModal('addRewardModal'); }
+
+    async function handleAddReward(e) {
+      e.preventDefault();
+      const employeeIds = Array.from(document.querySelectorAll('.reward-emp-check:checked')).map(c => c.value);
+      const body = {
+        name: document.getElementById('rewardName').value.trim(),
+        cost: document.getElementById('rewardCost').value,
+        employeeIds
+      };
+      try {
+        const data = await api('/api/admin/rewards/add', { method: 'POST', body: JSON.stringify(body) });
+        if (data.reward) {
+          showToast('✅ تمت الإضافة', 'success');
+          document.getElementById('addRewardForm').reset();
+          closeModal('addRewardModal');
+          loadRewards();
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+        }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    function openEditReward(r) {
+      document.getElementById('editRewardId').value = r.id;
+      document.getElementById('editRewardName').value = r.name;
+      document.getElementById('editRewardCost').value = r.cost;
+      const ids = r.employeeIds || [];
+      document.querySelectorAll('.edit-reward-emp-check').forEach(c => { c.checked = ids.includes(c.value); });
+      openModal('editRewardModal');
+    }
+
+    async function handleEditReward(e) {
+      e.preventDefault();
+      const employeeIds = Array.from(document.querySelectorAll('.edit-reward-emp-check:checked')).map(c => c.value);
+      const body = {
+        id: document.getElementById('editRewardId').value,
+        name: document.getElementById('editRewardName').value.trim(),
+        cost: document.getElementById('editRewardCost').value,
+        employeeIds
+      };
+      try {
+        const data = await api('/api/admin/rewards/update', { method: 'POST', body: JSON.stringify(body) });
+        if (data.reward) { showToast('💾 تم الحفظ', 'success'); closeModal('editRewardModal'); loadRewards(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function deleteReward(id) {
+      if (!confirm('متأكد إنك عايز تحذف الخدمة دي؟')) return;
+      try {
+        const data = await api('/api/admin/rewards/delete', { method: 'POST', body: JSON.stringify({ id }) });
+        if (data.ok) { showToast('🗑️ اتحذفت', 'success'); loadRewards(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    let qrUploadEmpId = null;
+    let qrUploadPendingData = undefined;
+
+    function openQrUploadModal(empId, name) {
+      qrUploadEmpId = empId;
+      qrUploadPendingData = undefined;
+      document.getElementById('qrUploadEmpName').textContent = name;
+      const emp = allEmployees.find(x => x.id === empId);
+      const preview = document.getElementById('qrUploadPreview');
+      preview.innerHTML = emp && emp.customQrImageUrl
+        ? `<img src="${emp.customQrImageUrl}" style="width:150px;height:150px;object-fit:cover;border-radius:12px;">`
+        : '<p style="font-size:12px;color:var(--text-muted);">مفيش صورة مخصصة دلوقتي — بيستخدم الكود التلقائي</p>';
+      document.getElementById('qrUploadInput').value = '';
+      openModal('qrUploadModal');
+    }
+
+    function handleQrUploadPreview(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        qrUploadPendingData = ev.target.result;
+        document.getElementById('qrUploadPreview').innerHTML = `<img src="${ev.target.result}" style="width:150px;height:150px;object-fit:cover;border-radius:12px;">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveQrUpload() {
+      if (qrUploadPendingData === undefined) { showToast('اختار صورة الأول', 'warning'); return; }
+      try {
+        const data = await api('/api/admin/employees/qr-update', { method: 'POST', body: JSON.stringify({ id: qrUploadEmpId, customQrImageUrl: qrUploadPendingData }) });
+        if (data.ok) { showToast('💾 تم حفظ الـ QR المخصص', 'success'); closeModal('qrUploadModal'); loadEmployees(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    async function clearQrUpload() {
+      try {
+        const data = await api('/api/admin/employees/qr-update', { method: 'POST', body: JSON.stringify({ id: qrUploadEmpId, customQrImageUrl: '' }) });
+        if (data.ok) { showToast('↩️ رجع الكود التلقائي', 'success'); closeModal('qrUploadModal'); loadEmployees(); }
+      } catch (e) { showToast('خطأ في الاتصال', 'error'); }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      event.target.closest('.tab-btn, .nav-item')?.classList.add('active');
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.href = 'index.html';
+    }
+
+    ['addEmployeeModal','empCustomersModal','addRewardModal','editRewardModal','customerModal','branchModal','redeemForCustomerModal','qrUploadModal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(id); });
+    });
+
+    async function init() {
+      await loadBranches();
+      await loadEmployees();
+      await loadCustomers();
+      await loadRewards();
+    }
+    init();
+  </script>
+</body>
+</html>

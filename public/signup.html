@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>تسجيل حساب جديد — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .shop-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      padding: 16px; text-align: center; color: white; border-radius: 16px; margin-bottom: 20px;
+    }
+    .shop-banner .shop-icon { font-size: 40px; margin-bottom: 8px; }
+    .shop-banner h2 { font-size: 18px; font-weight: 700; }
+    .shop-banner p { font-size: 13px; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+      </div>
+    </header>
+
+    <div style="border-radius: 0 0 28px 28px; overflow:hidden;">
+      <img src="assets/headlight-wash.jpg" alt="Car Care" style="width:100%; height:150px; object-fit:cover; display:block;">
+    </div>
+
+    <div style="padding: 20px 16px;">
+
+      <!-- Employee banner (if coming from an employee's QR) -->
+      <div id="empBanner" style="display: none;">
+        <div class="shop-banner">
+          <div class="shop-icon">🧑‍🔧</div>
+          <h2 id="empName">موظف Car Care</h2>
+          <p>هتبقى عميل مسجل عنده ✨</p>
+        </div>
+      </div>
+
+      <div class="text-center" style="margin-bottom: 24px;">
+        <div style="font-size: 48px; margin-bottom: 8px;">📝</div>
+        <h1 style="font-size: 22px; font-weight: 800;">افتح حسابك</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">تسجيل بيستغرق أقل من دقيقة</p>
+      </div>
+
+      <form id="signupForm" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label class="form-label">الاسم الكامل</label>
+          <input type="text" class="form-input" id="name" placeholder="مثال: أحمد محمد" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم التليفون</label>
+          <input type="tel" class="form-input" id="phone" placeholder="مثال: 01012345678" required pattern="01[0-9]{9}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم لوحة العربية</label>
+          <input type="text" class="form-input" id="plate" placeholder="مثال: س ي ر 1234" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <input type="password" class="form-input" id="password" placeholder="4 أرقام/حروف على الأقل" required minlength="4">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 8px;" id="submitBtn">
+          🚀 إنشاء الحساب
+        </button>
+      </form>
+
+      <div class="text-center" style="margin-top: 20px;">
+        <p style="color: var(--text-muted); font-size: 14px;">
+          عندك حساب؟ <a href="login.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">سجل دخول</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+    const urlParams = new URLSearchParams(window.location.search);
+    // الموظف بيوصلنا إما من ?ref= في الرابط أو محفوظ قبل كده من صفحة الهدية اليومية
+    const refEmp = urlParams.get('ref') || sessionStorage.getItem('refEmp') || null;
+    if (urlParams.get('ref')) sessionStorage.setItem('refEmp', urlParams.get('ref'));
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    if (refEmp) {
+      document.getElementById('empBanner').style.display = 'block';
+      document.getElementById('empName').textContent = 'موظف Car Care';
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري التسجيل...';
+
+      const body = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        plateNumber: document.getElementById('plate').value.trim(),
+        password: document.getElementById('password').value,
+        refEmp: refEmp || null
+      };
+
+      try {
+        const res = await fetch(API + '/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          sessionStorage.removeItem('refEmp');
+          showToast('🎉 تم التسجيل بنجاح!', 'success');
+          const pendingBonus = sessionStorage.getItem('pendingBonus');
+          sessionStorage.removeItem('pendingBonus');
+          setTimeout(() => window.location.href = pendingBonus ? 'scan.html' : 'dashboard.html', 1000);
+        } else {
+          showToast(data.error || 'حصل خطأ', 'error');
+          btn.disabled = false;
+          btn.textContent = '🚀 إنشاء الحساب';
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال بالسيرفر', 'error');
+        btn.disabled = false;
+        btn.textContent = '🚀 إنشاء الحساب';
+      }
+    }
+  </script>
+</body>
+</html>

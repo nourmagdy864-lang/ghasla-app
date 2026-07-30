@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أكواد QR — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .qr-print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; }
+    .qr-print-card {
+      background: white; border: 2px solid var(--border); border-radius: 16px; padding: 16px;
+      text-align: center; break-inside: avoid;
+    }
+    .qr-print-card img { width: 100%; max-width: 180px; border-radius: 10px; margin-bottom: 10px; }
+    .qr-print-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .qr-print-card p { font-size: 11px; color: var(--text-muted); }
+    @media print {
+      .top-bar, .header, .no-print { display: none !important; }
+      .qr-print-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body class="no-bottom-nav">
+  <div class="app-container">
+    <header class="header no-print">
+      <div class="header-content">
+        <a href="admin.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="window.print()" title="طباعة">🖨️</button>
+        </div>
+      </div>
+    </header>
+
+    <div style="padding: 16px 16px 0; text-align:center;">
+      <h1 style="font-size: 18px; font-weight: 800;">📱 أكواد QR لكل الموظفين</h1>
+      <p style="color: var(--text-muted); font-size: 13px;">اطبع كل كود وحطه عند الموظف بتاعه</p>
+    </div>
+
+    <div id="qrGrid" class="qr-print-grid">
+      <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = 'index.html';
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function loadQRCodes() {
+      try {
+        const res = await fetch(API + '/api/admin/employees', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        const employees = data.employees || [];
+        const grid = document.getElementById('qrGrid');
+        if (!employees.length) {
+          grid.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش موظفين</h3></div>';
+          return;
+        }
+        grid.innerHTML = employees.map(e => {
+          const scanUrl = window.location.origin + '/scan.html?emp=' + e.id;
+          const qrImg = e.customQrImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=220x220&ecc=M&data=${encodeURIComponent(scanUrl)}`;
+          return `
+            <div class="qr-print-card">
+              <img src="${qrImg}" alt="QR ${e.name}">
+              <h3>${e.name}</h3>
+              <p>${e.branchName}</p>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        showToast('مش قادر أجيب الأكواد', 'error');
+      }
+    }
+
+    loadQRCodes();
+  </script>
+</body>
+</html>

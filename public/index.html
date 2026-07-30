@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Car Care — نظافة عربيتك بتبدأ من هنا</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+  <style>
+    .shop-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 2px solid var(--border); display: flex; align-items: center; gap: 14px; transition: all 0.2s; cursor: pointer; }
+    .shop-card:hover { border-color: var(--primary); transform: translateX(-4px); }
+    .shop-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; background: var(--primary); color: #fff; }
+    .shop-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .shop-info p { font-size: 12px; color: var(--text-muted); }
+  </style>
+</head>
+<body class="no-bottom-nav">
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <!-- Top Bar -->
+    <div class="top-bar" style="position: relative; z-index: 3;">
+      <div class="top-bar-group">
+        <a href="login.html" class="top-bar-link">تسجيل الدخول</a>
+        <a href="signup.html" class="top-bar-link filled">إنشاء حساب</a>
+      </div>
+      <button class="top-bar-link" onclick="openEmpLogin()" style="border:none; background: rgba(255,255,255,0.15);">
+        🧑‍🔧 دخول الموظفين
+      </button>
+    </div>
+
+    <!-- Hero banner -->
+    <div class="hero-banner">
+      <video autoplay muted loop playsinline poster="assets/hero-porsche.jpg" style="width:100%; height:300px; object-fit:cover; display:block;">
+        <source src="assets/hero-video.mp4" type="video/mp4">
+      </video>
+      <div class="hero-overlay">
+        <div class="brand-clickable" onclick="openAdminLogin()" style="display:flex; align-items:center; gap:10px; margin-bottom: 14px;">
+          <div class="logo-icon" style="width:44px;height:44px;border-radius:12px;background:#fff;overflow:hidden;"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="color:#fff; font-weight:800; font-size:18px;">Car Care</div>
+        </div>
+        <h1>اغسل سيارتك، اكسب نقاط، واستبدلها بهدايا! 🚗💦</h1>
+        <p>اكسب نقاط مع كل غسلة، وحسابك ماله تاريخ انتهاء.</p>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="card" style="margin-top: 16px;">
+      <div class="card-title">🎯 إزاي النظام يشتغل؟</div>
+      <div class="rewards-grid">
+        <div class="reward-item" style="border-color: var(--primary);">
+          <div class="reward-info">
+            <h3>📝 افتح حسابك</h3>
+            <p>بالاسم ورقم التليفون ولوحة العربية</p>
+          </div>
+          <div class="reward-cost">1</div>
+        </div>
+        <div class="reward-item" style="border-color: var(--success);">
+          <div class="reward-info">
+            <h3>🚿 اغسل عربيتك</h3>
+            <p>الموظف يسجل الفاتورة، وتاخد نقاط تلقائي</p>
+          </div>
+          <div class="reward-cost" style="background: var(--success);">+</div>
+        </div>
+        <div class="reward-item" style="border-color: var(--warning);">
+          <div class="reward-info">
+            <h3>🎁 استبدل النقاط</h3>
+            <p>خدمات غسيل وخصومات حصرية</p>
+          </div>
+          <div class="reward-cost" style="background: var(--warning);">🎁</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tagline poster -->
+    <div style="margin: 16px 16px 0; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow);">
+      <img src="assets/poster-ar.jpg" alt="كل غسلة انتعاشة جديدة لسيارتك" style="width:100%; display:block;">
+    </div>
+
+    <!-- Rewards showcase (loaded live from server) -->
+    <div class="card">
+      <div class="card-title">🧼 كتالوج المكافآت</div>
+      <div id="rewardsShowcase">
+        <div class="loading"><div class="spinner"></div> جاري تحميل المكافآت...</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="padding: 20px 16px 40px;">
+      <a href="signup.html" class="btn btn-primary" style="margin-bottom: 12px;">
+        🚀 افتح حسابك دلوقتي
+      </a>
+      <a href="login.html" class="btn btn-secondary">
+        🔑 عندك حساب؟ سجل دخول
+      </a>
+    </div>
+
+  </div>
+
+  <a class="whatsapp-fab" href="https://wa.me/201553956546" target="_blank" rel="noopener" title="الدعم الفني">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+  </a>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Employee Login Modal -->
+  <div class="modal-overlay" id="empModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🧑‍🔧 دخول الموظفين</div>
+        <button class="modal-close" onclick="closeEmpModal()">✕</button>
+      </div>
+      <form id="empLoginForm" onsubmit="handleEmpLogin(event)">
+        <div class="form-group">
+          <label class="form-label">رقم دخول الموظف</label>
+          <input type="password" class="form-input" id="empCode" placeholder="اكتب رقمك" required maxlength="15">
+        </div>
+        <button type="submit" class="btn btn-primary">دخول</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ دخول الأدمن</div>
+        <button class="modal-close" onclick="closeAdminModal()">✕</button>
+      </div>
+      <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label class="form-label">رقم الأدمن</label>
+          <input type="password" class="form-input" id="adminCode" placeholder="اكتب الرقم السري" required maxlength="15">
+        </div>
+        <button type="submit" class="btn btn-primary">دخول</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function loadRewards() {
+      try {
+        const res = await fetch(API + '/api/rewards');
+        const data = await res.json();
+        const container = document.getElementById('rewardsShowcase');
+        const rewards = (data.rewards || []).slice(0, 6);
+        if (!rewards.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>لسه مفيش مكافآت</h3></div>';
+          return;
+        }
+        const icons = ['💧', '🧹', '✨', '💎', '🎁', '🌟'];
+        container.innerHTML = '<div class="svc-grid">' + rewards.map((r, i) => `
+          <div class="svc-card">
+            <div class="svc-icon" style="background: var(--primary)20; color: var(--primary);">${icons[i % icons.length]}</div>
+            <h3>${r.name}</h3>
+            <p>${r.cost.toLocaleString('en-US')} نقطة</p>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        showToast('مش قادر أجيب المكافآت', 'error');
+      }
+    }
+
+    function openEmpLogin() { document.getElementById('empModal').classList.add('active'); }
+    function closeEmpModal() { document.getElementById('empModal').classList.remove('active'); }
+    async function handleEmpLogin(e) {
+      e.preventDefault();
+      const code = document.getElementById('empCode').value;
+      try {
+        const res = await fetch(API + '/api/employee/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('empToken', data.token);
+          showToast('أهلاً ' + data.employee.name + '!', 'success');
+          setTimeout(() => window.location.href = 'employee.html', 500);
+        } else {
+          showToast(data.error || 'الرقم غلط', 'error');
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال', 'error');
+      }
+    }
+
+    function openAdminLogin() { document.getElementById('adminModal').classList.add('active'); }
+    function closeAdminModal() { document.getElementById('adminModal').classList.remove('active'); }
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const code = document.getElementById('adminCode').value;
+      try {
+        const res = await fetch(API + '/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+          showToast('أهلاً ' + data.admin.name + '!', 'success');
+          setTimeout(() => window.location.href = 'admin.html', 500);
+        } else {
+          showToast(data.error || 'الرقم غلط', 'error');
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال', 'error');
+      }
+    }
+
+    document.getElementById('empModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeEmpModal(); });
+    document.getElementById('adminModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAdminModal(); });
+
+    loadRewards();
+  </script>
+</body>
+</html>

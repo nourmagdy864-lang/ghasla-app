@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>حسابي — Car Care</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .scan-btn { position: relative; overflow: hidden; }
+    .scan-btn::after {
+      content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+      background: rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    .scan-btn:active::after { width: 300px; height: 300px; }
+  </style>
+</head>
+<body>
+  <div class="water-bg"></div>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><img src="assets/logo.jpg" alt="Car Care" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></div>
+          <div class="logo-text">Car Care</div>
+        </a>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="logout()" title="خروج">🚪</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Points Card -->
+    <div class="points-card" id="pointsCard">
+      <div class="points-label">💎 رصيد النقاط</div>
+      <div class="points-value" id="pointsValue">0</div>
+      <div class="points-unit">نقطة</div>
+    </div>
+
+    <!-- My Employee/Shop Card -->
+    <div class="card" id="myEmployeeCard" style="display:none;">
+      <div class="card-title">🧑‍🔧 المحل بتاعك</div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div id="myEmpPhoto" style="width:52px;height:52px;border-radius:14px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🧑‍🔧</div>
+        <div>
+          <div style="font-weight:800; font-size:15px;" id="myEmpName">—</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="myEmpBranch">—</div>
+        </div>
+      </div>
+      <div style="margin-top:12px; font-size:13px; color:var(--text-muted);" id="myEmpPhone"></div>
+      <div style="margin-top:4px; font-size:13px; color:var(--text-muted);" id="myEmpAddress"></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="padding: 0 16px; margin-bottom: 16px;">
+      <button class="btn btn-secondary" onclick="showRedeemModal()">
+        🎁 استبدل نقاط
+      </button>
+      <p style="text-align:center; font-size:12px; color: var(--text-muted); margin-top:8px;">
+        ✨ عايز هدية يومية؟ امسح كود QR بتاع المحل عشان تاخدها
+      </p>
+    </div>
+
+    <div style="padding: 0 16px 16px;">
+      <div style="border-radius: 16px; overflow:hidden; box-shadow: var(--shadow);">
+        <img src="assets/next-wash.jpg" alt="الغسلة الجاية" style="width:100%; display:block;">
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('rewards')">🎁 المكافآت</button>
+      <button class="tab-btn" onclick="switchTab('history')">📜 الحركات</button>
+      <button class="tab-btn" onclick="switchTab('messages')">📨 الرسائل</button>
+    </div>
+
+    <div class="tab-content active" id="tab-rewards">
+      <div id="rewardsList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-history">
+      <div id="historyList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-messages">
+      <div id="messagesList" style="padding: 0 16px 100px;">
+        <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab('rewards')">
+        <span class="nav-icon">🎁</span><span>مكافآت</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('history')">
+        <span class="nav-icon">📜</span><span>حركات</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('messages')">
+        <span class="nav-icon">📨</span><span>رسائل</span>
+      </button>
+      <button class="nav-item" onclick="logout()">
+        <span class="nav-icon">🚪</span><span>خروج</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <a class="whatsapp-fab" href="https://wa.me/201553956546" target="_blank" rel="noopener" title="الدعم الفني">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+  </a>
+
+  <div class="modal-overlay" id="redeemModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🎁 استبدال النقاط</div>
+        <button class="modal-close" onclick="closeRedeemModal()">✕</button>
+      </div>
+      <div id="redeemOptions" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const API = '';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    let currentCustomer = null;
+    let currentRewards = [];
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function api(url, opts = {}) {
+      opts.headers = opts.headers || {};
+      opts.headers['Authorization'] = 'Bearer ' + token;
+      opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+      const res = await fetch(API + url, opts);
+      return res.json();
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await api('/api/me');
+        if (data.customer) {
+          currentCustomer = data.customer;
+          document.getElementById('pointsValue').textContent = data.customer.points.toLocaleString();
+          if (data.myEmployee) {
+            const emp = data.myEmployee;
+            document.getElementById('myEmployeeCard').style.display = 'block';
+            document.getElementById('myEmpName').textContent = emp.name;
+            document.getElementById('myEmpBranch').textContent = emp.branchName || '—';
+            if (emp.photoUrl) document.getElementById('myEmpPhoto').innerHTML = `<img src="${emp.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">`;
+            document.getElementById('myEmpPhone').textContent = emp.phone ? '📞 ' + emp.phone : '';
+            document.getElementById('myEmpAddress').textContent = emp.address ? '📍 ' + emp.address : '';
+          }
+        } else {
+          logout();
+        }
+      } catch (e) {
+        logout();
+      }
+    }
+
+    async function loadRewards() {
+      try {
+        const data = await api('/api/customer/rewards');
+        currentRewards = data.rewards || [];
+        const container = document.getElementById('rewardsList');
+        if (!currentRewards.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش مكافآت دلوقتي</h3></div>';
+          return;
+        }
+        const svcIcons = ['💧', '🧹', '✨', '💎', '🎁', '🌟', '🚿', '🧴'];
+        container.innerHTML = '<div class="svc-grid">' + currentRewards.map((r, i) => `
+          <div class="svc-card selectable" onclick="redeemReward('${r.id}')" style="cursor: pointer;">
+            <div class="svc-icon" style="background: var(--primary)20; color: var(--primary);">${svcIcons[i % svcIcons.length]}</div>
+            <h3>${r.name}</h3>
+            <div class="svc-cost">${r.cost} نقطة</div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        showToast('مش قادر أجيب المكافآت', 'error');
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const data = await api('/api/activity');
+        const container = document.getElementById('historyList');
+        if (!data.items || !data.items.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش حركات لسه</h3><p>ابدأ تجمع نقاط!</p></div>';
+          return;
+        }
+        container.innerHTML = '<div class="tx-list">' + data.items.map(t => `
+          <div class="tx-item">
+            <div class="tx-icon ${t.type}">${t.type === 'earn' ? '💰' : '🎁'}</div>
+            <div class="tx-details">
+              <div class="tx-title">${t.desc}${t.branchName ? ' — ' + t.branchName : ''}</div>
+              <div class="tx-date">${new Date(t.createdAt).toLocaleDateString('ar-EG')}</div>
+            </div>
+            <div class="tx-amount ${t.type}">${t.amount > 0 ? '+' : ''}${t.amount}</div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        showToast('مش قادر أجيب الحركات', 'error');
+      }
+    }
+
+    async function loadMessages() {
+      try {
+        const data = await api('/api/customer/messages');
+        const container = document.getElementById('messagesList');
+        if (!data.messages || !data.messages.length) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">📭</span><h3>مفيش رسائل</h3></div>';
+          return;
+        }
+        container.innerHTML = '<div class="msg-list">' + data.messages.map(m => `
+          <div class="msg-item">
+            <div class="msg-sender">${m.senderName}</div>
+            <div class="msg-text">${m.text}</div>
+            <div class="msg-time">${new Date(m.createdAt).toLocaleDateString('ar-EG')}</div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        showToast('مش قادر أجيب الرسائل', 'error');
+      }
+    }
+
+    function showRedeemModal() {
+      const modal = document.getElementById('redeemModal');
+      const options = document.getElementById('redeemOptions');
+      if (!currentRewards.length) {
+        options.innerHTML = '<p style="text-align: center; color: var(--text-muted);">مفيش مكافآت متاحة</p>';
+      } else {
+        options.innerHTML = currentRewards.map(r => `
+          <div class="reward-item" onclick="redeemReward('${r.id}'); closeRedeemModal();" style="cursor: pointer;">
+            <div class="reward-info">
+              <h3>${r.name}</h3>
+              <p>${r.cost} نقطة</p>
+            </div>
+            <div class="reward-cost">استبدل</div>
+          </div>
+        `).join('');
+      }
+      modal.classList.add('active');
+    }
+
+    function closeRedeemModal() { document.getElementById('redeemModal').classList.remove('active'); }
+
+    async function redeemReward(rewardId) {
+      try {
+        const data = await api('/api/redeem', { method: 'POST', body: JSON.stringify({ rewardId }) });
+        if (data.customer) {
+          document.getElementById('pointsValue').textContent = data.customer.points.toLocaleString();
+          showToast(data.message, 'success');
+          loadRewards();
+          loadHistory();
+        } else {
+          showToast(data.error, 'error');
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال', 'error');
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      event.target.closest('.tab-btn, .nav-item')?.classList.add('active');
+      if (tab === 'history') loadHistory();
+      if (tab === 'messages') loadMessages();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('redeemModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeRedeemModal();
+    });
+
+    loadProfile();
+    loadRewards();
+  </script>
+</body>
+</html>
