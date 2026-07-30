@@ -47,27 +47,21 @@
     <!-- How it works -->
     <div class="card" style="margin-top: 16px;">
       <div class="card-title">🎯 إزاي النظام يشتغل؟</div>
-      <div class="rewards-grid">
-        <div class="reward-item" style="border-color: var(--primary);">
-          <div class="reward-info">
-            <h3>📝 افتح حسابك</h3>
-            <p>بالاسم ورقم التليفون ولوحة العربية</p>
-          </div>
-          <div class="reward-cost">1</div>
+      <div class="feature-box-grid">
+        <div class="feature-box">
+          <div class="feature-icon">📝</div>
+          <div class="feature-title">افتح حسابك</div>
+          <div class="feature-desc">بالاسم ورقم التليفون واللوحة</div>
         </div>
-        <div class="reward-item" style="border-color: var(--success);">
-          <div class="reward-info">
-            <h3>🚿 اغسل عربيتك</h3>
-            <p>الموظف يسجل الفاتورة، وتاخد نقاط تلقائي</p>
-          </div>
-          <div class="reward-cost" style="background: var(--success);">+</div>
+        <div class="feature-box">
+          <div class="feature-icon">🚿</div>
+          <div class="feature-title">اغسل عربيتك</div>
+          <div class="feature-desc">وتاخد نقاط تلقائي</div>
         </div>
-        <div class="reward-item" style="border-color: var(--warning);">
-          <div class="reward-info">
-            <h3>🎁 استبدل النقاط</h3>
-            <p>خدمات غسيل وخصومات حصرية</p>
-          </div>
-          <div class="reward-cost" style="background: var(--warning);">🎁</div>
+        <div class="feature-box">
+          <div class="feature-icon">🎁</div>
+          <div class="feature-title">استبدل النقاط</div>
+          <div class="feature-desc">خدمات وخصومات حصرية</div>
         </div>
       </div>
     </div>
@@ -78,8 +72,8 @@
     </div>
 
     <!-- Rewards showcase (loaded live from server) -->
-    <div class="card">
-      <div class="card-title">🧼 كتالوج المكافآت</div>
+    <div style="padding: 8px 16px 0;">
+      <div style="font-weight: 800; font-size: 16px; margin-bottom: 12px;">🧼 كتالوج المكافآت</div>
       <div id="rewardsShowcase">
         <div class="loading"><div class="spinner"></div> جاري تحميل المكافآت...</div>
       </div>
@@ -160,13 +154,18 @@
           return;
         }
         const icons = ['💧', '🧹', '✨', '💎', '🎁', '🌟'];
-        container.innerHTML = '<div class="svc-grid">' + rewards.map((r, i) => `
-          <div class="svc-card">
-            <div class="svc-icon" style="background: var(--primary)20; color: var(--primary);">${icons[i % icons.length]}</div>
-            <h3>${r.name}</h3>
-            <p>${r.cost.toLocaleString('en-US')} نقطة</p>
+        const images = ['assets/hero-porsche.jpg', 'assets/headlight-wash.jpg', 'assets/next-wash.jpg', 'assets/hand-car.jpg', 'assets/hero-porsche.jpg', 'assets/headlight-wash.jpg'];
+        container.innerHTML = rewards.map((r, i) => `
+          <div class="pro-card">
+            <img class="pro-card-img" src="${images[i % images.length]}" alt="${r.name}">
+            <div class="pro-card-body">
+              <div class="pro-card-badge">${icons[i % icons.length]}</div>
+              <h3>${r.name}</h3>
+              <p>استبدل ${r.cost.toLocaleString('en-US')} نقطة واستمتع بالخدمة دي</p>
+              <a href="signup.html" class="pro-card-btn">اعرف أكتر</a>
+            </div>
           </div>
-        `).join('') + '</div>';
+        `).join('');
       } catch (e) {
         showToast('مش قادر أجيب المكافآت', 'error');
       }
