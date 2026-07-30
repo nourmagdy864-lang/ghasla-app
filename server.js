@@ -71,7 +71,15 @@ function serveStatic(req, res, urlPath) {
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    // منع أي كاش (متصفح أو أي طبقة وسيطة) من الاحتفاظ بنسخة قديمة من الصفحات والأكواد
+    const noCacheExts = ['.html', '.css', '.js'];
+    const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
+    if (noCacheExts.includes(ext)) {
+      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      headers['Pragma'] = 'no-cache';
+      headers['Expires'] = '0';
+    }
+    res.writeHead(200, headers);
     res.end(content);
   });
 }
