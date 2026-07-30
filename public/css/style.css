@@ -1,22 +1,22 @@
 /* ===== غسلة — تصميم موبايل فقط ===== */
 
 :root {
-  --primary: #1B3B6F;
-  --primary-light: #2D5296;
-  --primary-dark: #0F2A54;
-  --secondary: #14274E;
-  --accent: #3B6FD4;
-  --bg: #F5F7FA;
+  --primary: #0EA5E9;
+  --primary-light: #38BDF8;
+  --primary-dark: #0284C7;
+  --secondary: #06B6D4;
+  --accent: #22D3EE;
+  --bg: #F0F9FF;
   --bg-card: #FFFFFF;
   --text: #0F172A;
   --text-muted: #64748B;
   --text-light: #94A3B8;
-  --border: #E5E9F0;
+  --border: #E2E8F0;
   --success: #10B981;
   --danger: #EF4444;
   --warning: #F59E0B;
-  --shadow: 0 4px 20px rgba(15, 42, 84, 0.10);
-  --shadow-lg: 0 10px 40px rgba(15, 42, 84, 0.16);
+  --shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
+  --shadow-lg: 0 10px 40px rgba(14, 165, 233, 0.2);
   --radius: 16px;
   --radius-sm: 12px;
   --radius-lg: 24px;
@@ -31,7 +31,8 @@
 
 html, body {
   font-family: 'Segoe UI', 'Tahoma', system-ui, -apple-system, sans-serif;
-  background: #F5F7FA;
+  background: linear-gradient(180deg, #BFE8FB 0%, #DCF3FE 25%, #EFFAFF 55%, #FFFFFF 100%);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
@@ -44,7 +45,7 @@ html, body {
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  background: #F5F7FA;
+  background: linear-gradient(180deg, #BFE8FB 0%, #DCF3FE 22%, #EFFAFF 50%, #FFFFFF 80%);
 }
 
 /* ===== Header ===== */
@@ -165,12 +166,13 @@ html, body {
 
 /* ===== Cards ===== */
 .card {
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(6px);
   border-radius: var(--radius);
   padding: 20px;
-  margin: 14px 16px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
+  margin: 16px 16px;
+  box-shadow: 0 4px 24px rgba(14, 165, 233, 0.16);
+  border: 1px solid rgba(14, 165, 233, 0.18);
 }
 
 .card-title {
@@ -775,7 +777,22 @@ html, body {
 
 /* ===== Water Animation Background ===== */
 .water-bg {
-  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255,255,255,0.55) 0, rgba(255,255,255,0.55) 22px, transparent 23px),
+    radial-gradient(circle at 82% 8%, rgba(255,255,255,0.45) 0, rgba(255,255,255,0.45) 34px, transparent 35px),
+    radial-gradient(circle at 92% 30%, rgba(6,182,212,0.20) 0, rgba(6,182,212,0.20) 14px, transparent 15px),
+    radial-gradient(circle at 6% 45%, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 10px, transparent 11px),
+    radial-gradient(circle at 88% 62%, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 26px, transparent 27px),
+    radial-gradient(circle at 15% 78%, rgba(6,182,212,0.18) 0, rgba(6,182,212,0.18) 18px, transparent 19px),
+    radial-gradient(circle at 70% 90%, rgba(255,255,255,0.45) 0, rgba(255,255,255,0.45) 30px, transparent 31px),
+    radial-gradient(circle at 40% 20%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0.35) 8px, transparent 9px),
+    radial-gradient(circle at 55% 55%, rgba(255,255,255,0.3) 0, rgba(255,255,255,0.3) 6px, transparent 7px);
+  background-repeat: no-repeat;
 }
 .water-bg::after {
   content: '';
