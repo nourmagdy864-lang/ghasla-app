@@ -855,7 +855,12 @@ route('GET', '/api/employee/customers', async (req, res) => {
   const data = db.get();
   const customers = data.customers
     .filter(c => c.ownerEmployeeId === session.userId)
-    .map(publicCustomer)
+    .map(c => {
+      const pc = publicCustomer(c);
+      const txCount = data.transactions.filter(t => t.customerId === c.id && t.type === 'earn').length;
+      pc.isNew = txCount <= 1;
+      return pc;
+    })
     .sort((a, b) => b.points - a.points);
   sendJSON(res, 200, { customers });
 });
